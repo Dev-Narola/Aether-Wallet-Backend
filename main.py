@@ -27,3 +27,6 @@ app.register_blueprint(lending_bp, url_prefix='/lending')
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
+
+
+# to run : main.py
