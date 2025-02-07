@@ -2,6 +2,7 @@ from datetime import datetime
 from bson.objectid import ObjectId
 from database import db
 import bcrypt
+from werkzeug.security import generate_password_hash, check_password_hash
 
 # Use the 'users' collection from the database
 users_collection = db['users']
@@ -35,6 +36,10 @@ class User:
     @staticmethod
     def find_by_email(email):
         return users_collection.find_one({"email": email})
+    
+    @staticmethod
+    def hash_password(password):
+        return generate_password_hash(password)
 
     @staticmethod
     def find_by_id(user_id):

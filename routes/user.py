@@ -101,3 +101,37 @@ def delete_account():
     users_collection.delete_one({'_id': user['_id']})
 
     return jsonify({'message': 'Account and all associated data deleted successfully'}), 200
+
+@auth_bp.route('/update', methods=['PUT'])
+def update_user():
+    auth_header = request.headers.get('Authorization')
+    if not auth_header:
+        return jsonify({'message': 'Token missing in the Authorization header'}), 400
+
+    token = auth_header.split(" ")[1] if " " in auth_header else auth_header
+    user = User.find_by_token(token)
+    if not user:
+        return jsonify({'message': 'Invalid token or user not found'}), 401
+
+    data = request.json
+
+    # Update fields only if provided
+    updated_fields = {}
+    if 'name' in data:
+        updated_fields['name'] = data['name']
+    if 'email' in data:
+        existing_user = User.find_by_email(data['email'])
+        if existing_user and str(existing_user['_id']) != str(user['_id']):
+            return jsonify({'message': 'Email already in use'}), 409
+        updated_fields['email'] = data['email']
+    if 'password' in data:
+        updated_fields['password'] = User.hash_password(data['password'])
+    if 'mobile_no' in data:
+        updated_fields['mobile_no'] = data['mobile_no']
+    if 'user_image' in data:
+        updated_fields['user_image'] = data['user_image']
+
+    # Update the user document in MongoDB
+    users_collection.update_one({'_id': user['_id']}, {'$set': updated_fields})
+
+    return jsonify({'message': 'User updated successfully'}), 200
